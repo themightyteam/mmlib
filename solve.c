@@ -55,8 +55,10 @@ void explore(float force)
 
 	while (true) {
 		go_to_target(force);
-		if (collision_detected())
+		if (collision_detected()){
+			reset_motion();
 			return;
+		}
 		if (search_position() == 0)
 			break;
 		cell = find_unexplored_interesting_cell();
@@ -111,10 +113,12 @@ void set_run_sequence(void)
  * @brief Run from the start to the goal.
  *
  * @param[in] force Maximum force to apply on the tires.
+ * @param[in] type of path to choose between diagonals and normal path
  */
-void run(float force)
+void run(float force, enum path_language path)
 {
-	execute_movement_sequence(run_sequence, force, PATH_DIAGONALS);
+  //execute_movement_sequence(run_sequence, force, PATH_DIAGONALS); //FIXME: modify
+  execute_movement_sequence(run_sequence, force, path);
 }
 
 /**

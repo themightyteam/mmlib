@@ -27,7 +27,7 @@ void blink_collision(void)
 {
 	int i;
 
-	for (i = 0; i < 10; i++) {
+	for (i = 0; i < 100; i++) {
 		led_left_on();
 		led_right_off();
 		sleep_ticks(200);
@@ -82,6 +82,54 @@ enum button_response button_user_response(void)
 	return BUTTON_LONG;
 }
 
+
+
+/**
+ * @brief Read user button, requiring consecutive positive reads.
+ *
+ * @param[in] limit Maximum number of seconds (returns anyway when reached).
+ *
+ * @return Seconds of consecutive positive reads.
+ */
+static float button_user_left_count_seconds(float limit)
+{
+	stopwatch_start();
+	while (stopwatch_stop() < limit) {
+		if (!button_read_user_left())
+			break;
+	}
+	return stopwatch_stop();
+}
+
+/**
+ * @brief Check for any user button response.
+ *
+ * A user button response can either be an action or no-response.
+ *
+ * @return The user button response.
+ */
+enum button_response button_user_left_response(void)
+{
+	float readings = button_user_left_count_seconds(.5);
+
+	if (readings < 0.05)
+		return BUTTON_NONE;
+	if (readings < 0.3) {
+		speaker_play_beeps(1);
+		return BUTTON_SHORT_LEFT;
+	}
+	led_left_on();
+	led_right_on();
+	while (button_read_user_left())
+		;
+	led_left_off();
+	led_right_off();
+	speaker_play_beeps(2);
+	return BUTTON_LONG_LEFT;
+}
+
+
+
 /**
  * @brief Wait for an user button action.
  *
@@ -95,9 +143,12 @@ enum button_action button_user_wait_action(void)
 
 	while (1) {
 		action = button_user_response();
-		if (action == BUTTON_NONE)
-			continue;
-		return (enum button_action)action;
+		if (action != BUTTON_NONE)		  
+		  return (enum button_action)action;
+
+		action = button_user_left_response();
+		if (action != BUTTON_NONE)		  
+		  return (enum button_action)action;
 	}
 }
 
@@ -160,6 +211,85 @@ void speaker_play_competition(void)
 	music_play('G', 7, 0, 0.45);
 }
 
+void under_the_sea_1(void)
+{
+	music_play('D', 5, 0, 0.15);
+	music_play('F', 5, 0, 0.15);
+	music_play('A', 5, 1, 0.15);
+	music_play('D', 6, 0, 0.30);
+	music_play('D', 6, 0, 0.30);
+	music_play('A', 5, 1, 0.15);
+	music_play('C', 6, 0, 0.30);
+	music_play('D', 6, 1, 0.30);
+	music_play('D', 6, 0, 0.30);
+	music_play('A', 5, 1, 0.30);
+}
+
+
+void under_the_sea_2(void)
+{
+	music_play('A', 4, 1, 0.15);
+	music_play('D', 5, 0, 0.15);
+	music_play('F', 5, 0, 0.30);
+	music_play('A', 5, 1, 0.30);
+	music_play('A', 5, 1, 0.15);
+	music_play('C', 5, 0, 0.15);
+	music_play('A', 5, 0, 0.30);
+	music_play('C', 6, 0, 0.30);
+	music_play('A', 5, 1, 0.30);
+}
+
+
+void cantina_1(void)
+{
+	music_play('A', 5, 0, 0.15);
+	sleep_seconds(0.15);
+	music_play('D', 6, 0, 0.15);
+	sleep_seconds(0.15);
+	music_play('A', 5, 0, 0.15);
+	sleep_seconds(0.15);
+	music_play('D', 6, 0, 0.15);
+	sleep_seconds(0.15);
+	music_play('A', 5, 0, 0.15);
+	music_play('D', 6, 0, 0.15);
+	sleep_seconds(0.15);
+	music_play('A', 5, 0, 0.30);
+}
+
+
+void cantina_2(void)
+{
+	music_play('G', 5, 1, 0.15);
+	music_play('A', 5, 0, 0.30);
+	music_play('A', 5, 0, 0.15);
+	music_play('G', 5, 1, 0.15);
+	music_play('A', 5, 0, 0.15);
+	music_play('G', 5, 0, 0.30);
+	music_play('F', 5, 1, 0.15);
+	music_play('G', 5, 0, 0.15);
+	music_play('F', 5, 1, 0.15);
+	music_play('F', 5, 0, 0.45);
+	music_play('D', 5, 0, 0.30);
+}
+
+void indy_1(void)
+{
+    music_play('E', 5, 0, 0.30);
+    sleep_seconds(0.15);
+    music_play('F', 5, 0, 0.15);
+    music_play('G', 5, 0, 0.15);
+    sleep_seconds(0.15);
+    music_play('C', 6, 0, 0.60);
+}
+void indy_2(void)
+{
+    music_play('D', 5, 0, 0.30);
+    sleep_seconds(0.15);
+    music_play('E', 5, 0, 0.15);
+    music_play('F', 5, 0, 1.20);
+}
+
+
 /**
  * @brief Wait for a close front sensor signal.
  *
@@ -180,14 +310,18 @@ void wait_front_sensor_close_signal(float close_distance)
 void configure_solver_direction(void)
 {
 	switch (button_user_wait_action()) {
+	case BUTTON_SHORT_LEFT:
 	case BUTTON_SHORT:
 		set_search_initial_direction(NORTH);
 		led_left_on();
 		break;
+	case BUTTON_LONG_LEFT:
 	case BUTTON_LONG:
 		set_search_initial_direction(EAST);
 		led_right_on();
 		break;
+
+       
 	}
 }
 
@@ -219,6 +353,12 @@ float hmi_configure_force(float minimum_force, float force_step)
 			led_right_on();
 			sleep_ticks(1000);
 			return force * force_step + minimum_force;
+
+
+		default:
+		  break;
 		}
+
+	    
 	}
 }

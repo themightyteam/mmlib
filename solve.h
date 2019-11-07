@@ -15,7 +15,7 @@ void explore(float force);
 void send_state(void);
 #endif
 void set_run_sequence(void);
-void run(float force);
+void run(float force, enum path_language path);
 void run_back(float force);
 void save_maze(void);
 void load_maze(void);

@@ -170,7 +170,7 @@ void log_data_front_sensors_calibration(void)
 
 	get_sensors_raw(on, off);
 
-	LOG_DATA("[%" PRId32 ",%d,%d,%d,%d,%.4f,%.4f]", micrometers,
+	LOG_DATA("[%" PRId32 ",%d  ,  %d  ,  %d  ,  %d  ,  %.4f  ,  %.4f]", micrometers,
 		 on[SENSOR_FRONT_LEFT_ID], off[SENSOR_FRONT_LEFT_ID],
 		 on[SENSOR_FRONT_RIGHT_ID], off[SENSOR_FRONT_RIGHT_ID],
 		 left_distance, right_distance);
@@ -179,7 +179,7 @@ void log_data_front_sensors_calibration(void)
 /**
  * @brief Log all interesting control variables.
  */
-void log_data_control(void)
+void log_data_control_aa(void)
 {
 	float front_left_distance = get_front_left_distance();
 	float front_right_distance = get_front_right_distance();
@@ -193,12 +193,122 @@ void log_data_control(void)
 	float right_voltage = get_right_motor_voltage();
 	int left_pwm = get_left_pwm();
 	int right_pwm = get_right_pwm();
+	float left_speed = get_encoder_left_speed();
+	float right_speed = get_encoder_right_speed();
+	int encoder_left = get_encoder_left_total_count();
+	int encoder_right = get_encoder_right_total_count();
+	int gyro = get_gyro_z_degrees();
+	bool front_wall = front_wall_detection();
+	bool right_wall = right_wall_detection();
+	bool left_wall = left_wall_detection();
 
-	LOG_DATA("[%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.2f,%.2f,%d,%d]",
+	//LOG_DATA("[%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.2f,%.2f,%d,%d, %f, %f,%d,%d,%d,%d,%d,%d]",
+	LOG_DATA("[fl%.3f fr%.3f sl%.3f sr%.3f il%.3f ml%.3f ia%.3f ma%.3f,%.2f,%.2f,%d,%d, ls%f rs%f el%d er%d g%d fw%d lw%d rw%d",
 		 front_left_distance, front_right_distance, side_left_distance,
 		 side_right_distance, ideal_linear, measured_linear,
 		 ideal_angular, measured_angular, left_voltage, right_voltage,
-		 left_pwm, right_pwm);
+		 left_pwm, right_pwm, left_speed, right_speed, encoder_left, encoder_right, gyro,
+		 front_wall, left_wall, right_wall);
+}
+
+void log_data_control__RLU(void)
+{
+	float angular_speed = get_encoder_angular_speed();
+	float ideal_speed = get_ideal_angular_speed();
+	float voltage_left = get_left_motor_voltage();
+	float voltage_right = get_right_motor_voltage();
+	int pwm_left = get_left_pwm();
+	int pwm_right = get_right_pwm();
+
+	LOG_DATA("%f,%f,%f,%f,%d,%d", ideal_speed, angular_speed, voltage_left,
+		 voltage_right, pwm_left, pwm_right);
+}
+
+void log_data_control_________________________(void)
+{
+	float left_distance = get_front_left_distance();
+	float right_distance = get_front_right_distance();
+	uint16_t off[NUM_SENSOR];
+	uint16_t on[NUM_SENSOR];
+	int32_t micrometers = get_encoder_average_micrometers();
+
+	get_sensors_raw(on, off);
+
+	LOG_DATA("[, %" PRId32 " onl %d offl  %d onr %d offr %d  ,  %.4f  ,  %.4f ,]", micrometers,
+		 on[SENSOR_FRONT_LEFT_ID], off[SENSOR_FRONT_LEFT_ID],
+		 on[SENSOR_FRONT_RIGHT_ID], off[SENSOR_FRONT_RIGHT_ID],
+		 left_distance, right_distance);
+}
+
+void log_data_control__(void)
+{
+	float left_distance = get_front_left_distance();
+	float right_distance = get_front_right_distance();
+	uint16_t off[NUM_SENSOR];
+	uint16_t on[NUM_SENSOR];
+	int32_t micrometers = get_encoder_average_micrometers();
+
+	get_sensors_raw(on, off);
+
+	LOG_DATA(" onl %d offl %d l %d onr %d offr %d r %d ld %.4f rd %.4f",
+		 on[SENSOR_FRONT_LEFT_ID], off[SENSOR_FRONT_LEFT_ID],
+		 on[SENSOR_FRONT_LEFT_ID] - off[SENSOR_FRONT_LEFT_ID],
+		 on[SENSOR_FRONT_RIGHT_ID], off[SENSOR_FRONT_RIGHT_ID],
+		 on[SENSOR_FRONT_RIGHT_ID] - off[SENSOR_FRONT_RIGHT_ID],
+		 left_distance, right_distance);
+}
+
+void log_data_control___k_(void)
+{
+	uint16_t off[NUM_SENSOR];
+	uint16_t on[NUM_SENSOR];
+
+	get_sensors_raw(on, off);
+
+	LOG_DATA("l %d r %d",
+		 on[SENSOR_FRONT_LEFT_ID] - off[SENSOR_FRONT_LEFT_ID],
+		 on[SENSOR_FRONT_RIGHT_ID] - off[SENSOR_FRONT_RIGHT_ID]);
+}
+
+
+void log_data_control_(void)
+{
+	uint16_t off[NUM_SENSOR];
+	uint16_t on[NUM_SENSOR];
+
+	get_sensors_raw(on, off);
+
+	LOG_DATA("l %d r %d",
+		 on[SENSOR_SIDE_LEFT_ID] - off[SENSOR_SIDE_LEFT_ID],
+		 on[SENSOR_SIDE_RIGHT_ID] - off[SENSOR_SIDE_RIGHT_ID]);
+}
+
+void log_data_control__________(void)
+{
+	float left_speed = get_encoder_left_speed();
+	float right_speed = get_encoder_right_speed();
+	int encoder_left = get_encoder_left_total_count();
+	int encoder_right = get_encoder_right_total_count();
+	int mm_left = get_encoder_left_micrometers();
+	int mm_right = get_encoder_right_micrometers();
+
+	LOG_DATA("[%f, %f, %d, %d, %d, %d]",
+		 left_speed, right_speed, encoder_left, encoder_right, mm_left, mm_right);
+}
+
+void log_data_control____(void)
+{
+	uint16_t off[NUM_SENSOR];
+	uint16_t on[NUM_SENSOR];
+
+	get_sensors_raw(on, off);
+	float sl_dist = get_side_left_distance();
+	float sr_dist = get_side_right_distance();
+
+	int gyro = get_gyro_z_raw();
+
+	LOG_INFO("onl %d onr %d dl %f dr %f g %d", on[SENSOR_SIDE_LEFT_ID],
+		 on[SENSOR_SIDE_RIGHT_ID], sl_dist, sr_dist, gyro);
 }
 
 /**
@@ -214,4 +324,45 @@ void log_walls_detection(void)
 		 "\"wall_right\":%d,"
 		 "\"wall_front\":%d}",
 		 left_wall, right_wall, front_wall);
+}
+
+
+
+void log_data_control___D(void)
+{
+	LOG_DATA("distances \n%d, %d, %d, %d\n%d, %d, %d, %d\n"
+			"maze_walls \n%d, %d, %d, %d\n%d, %d, %d, %d\n",
+			read_cell_distance_value(MAZE_SIZE * 0 + 0),
+			read_cell_distance_value(MAZE_SIZE * 0 + 1),
+			read_cell_distance_value(MAZE_SIZE * 0 + 2),
+			read_cell_distance_value(MAZE_SIZE * 0 + 3),
+			read_cell_distance_value(MAZE_SIZE * 1 + 0),
+			read_cell_distance_value(MAZE_SIZE * 1 + 1),
+			read_cell_distance_value(MAZE_SIZE * 1 + 2),
+			read_cell_distance_value(MAZE_SIZE * 1 + 3),
+			read_cell_walls_value(MAZE_SIZE * 0 + 0),
+			read_cell_walls_value(MAZE_SIZE * 0 + 1),
+			read_cell_walls_value(MAZE_SIZE * 0 + 2),
+			read_cell_walls_value(MAZE_SIZE * 0 + 3),
+			read_cell_walls_value(MAZE_SIZE * 1 + 0),
+			read_cell_walls_value(MAZE_SIZE * 1 + 1),
+			read_cell_walls_value(MAZE_SIZE * 1 + 2),
+			read_cell_walls_value(MAZE_SIZE * 1 + 3)
+			);
+
+}
+
+
+
+void log_data_control(void)
+{
+
+  	int left_pwm = get_left_pwm();
+	int right_pwm = get_right_pwm();
+
+ 
+	   LOG_DATA("pwm %d %d\n",
+		    left_pwm,
+		    right_pwm);
+		    
 }

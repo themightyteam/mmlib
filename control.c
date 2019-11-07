@@ -6,6 +6,7 @@ static volatile float ideal_angular_speed;
 
 static volatile float linear_error;
 static volatile float angular_error;
+static volatile float angular_error_integral;
 static volatile float last_linear_error;
 static volatile float last_angular_error;
 
@@ -23,6 +24,8 @@ static volatile bool diagonal_sensors_control_enabled;
 static volatile float side_sensors_integral;
 static volatile float front_sensors_integral;
 static volatile float diagonal_sensors_integral;
+
+
 
 /**
  * @brief Convert a given voltage to its corresponding motor PWM duty.
@@ -332,10 +335,12 @@ void motor_control(void)
 		side_sensors_integral += side_sensors_feedback;
 	}
 
+	
 	if (front_sensors_control_enabled) {
 		front_sensors_feedback = get_front_sensors_error();
 		front_sensors_integral += front_sensors_feedback;
 	}
+	
 
 	if (diagonal_sensors_control_enabled) {
 		diagonal_sensors_feedback = get_diagonal_sensors_error();
@@ -345,6 +350,8 @@ void motor_control(void)
 	linear_error += ideal_linear_speed - get_measured_linear_speed();
 	angular_error += ideal_angular_speed - get_measured_angular_speed();
 
+	angular_error_integral += angular_error;
+	
 	control = get_control_constants();
 
 	linear_voltage = control.kp_linear * linear_error +
@@ -352,6 +359,7 @@ void motor_control(void)
 	angular_voltage =
 	    control.kp_angular * angular_error +
 	    control.kd_angular * (angular_error - last_angular_error) +
+	  control.ki_angular * angular_error_integral + 
 	    control.kp_angular_side * side_sensors_feedback +
 	    control.kp_angular_front * front_sensors_feedback +
 	    control.kp_angular_diagonal * diagonal_sensors_feedback +
@@ -369,8 +377,8 @@ void motor_control(void)
 
 	last_linear_error = linear_error;
 	last_angular_error = angular_error;
-
+/*
 	if (motor_driver_saturation() >
 	    MAX_MOTOR_DRIVER_SATURATION_PERIOD * SYSTICK_FREQUENCY_HZ)
-		set_collision_detected();
+		set_collision_detected();*/
 }

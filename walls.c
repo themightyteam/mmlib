@@ -186,6 +186,21 @@ bool front_wall_detection(void)
 		   : false;
 }
 
+
+/**
+ * @brief Detect the existance or absence of the front wall.
+ */
+bool front_wall_detection_for_correction(void)
+{
+	return ((distance[SENSOR_FRONT_LEFT_ID] < CELL_DIMENSION * 2.5) &&
+		(distance[SENSOR_FRONT_LEFT_ID] > CELL_DIMENSION * 0.5) &&
+		(distance[SENSOR_FRONT_RIGHT_ID] > CELL_DIMENSION * 0.5) &&
+		(distance[SENSOR_FRONT_RIGHT_ID] < CELL_DIMENSION * 2.5))
+		   ? true
+		   : false;
+}
+
+
 /**
  * @brief Return left, front and right walls detection readings.
  */

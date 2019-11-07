@@ -21,5 +21,6 @@ bool right_wall_detection(void);
 bool left_wall_detection(void);
 struct walls_around read_walls(void);
 void side_sensors_calibration(void);
+bool front_wall_detection_for_correction(void);
 
 #endif /* __WALLS_H */

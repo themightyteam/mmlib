@@ -28,12 +28,16 @@ static void _entered_next_cell(void)
 	int32_t front_wall_correction;
 
 	current_cell_start_micrometers = get_encoder_average_micrometers();
+
+	
 	if (front_wall_detection()) {
 		front_wall_correction =
 		    (int32_t)((get_front_wall_distance() - CELL_DIMENSION) *
 			      MICROMETERS_PER_METER);
 		current_cell_start_micrometers += front_wall_correction;
 	}
+	
+       
 	led_left_toggle();
 }
 
@@ -264,7 +268,7 @@ void stop_head_front_wall(void)
  */
 void stop_middle(void)
 {
-	float distance = CELL_DIMENSION / 2.;
+	float distance = CELL_DIMENSION / 3.;
 
 	front_sensors_control(true);
 	side_sensors_close_control(true);
@@ -283,16 +287,24 @@ void turn_back(float force)
 {
 	int direction_sign;
 
+	/* Hector We cannot do this until we improve the sensor information */
+	/*
 	if (get_front_wall_distance() < CELL_DIMENSION)
-		keep_front_wall_distance(CELL_DIMENSION / 2.);
+		keep_front_wall_distance(1 *CELL_DIMENSION / 3.);  // FIXME: try to keep with (2 *CELL_DIMENSION)/3. 
+	*/
+       
+
 	disable_walls_control();
 	direction_sign = (int)(rand() % 2) * 2 - 1;
 	inplace_turn(direction_sign * PI, force);
 
 	current_cell_start_micrometers =
 	    get_encoder_average_micrometers() -
-	    (CELL_DIMENSION / 2. + SHIFT_AFTER_180_DEG_TURN) *
+	    (1. * CELL_DIMENSION / 3. + SHIFT_AFTER_180_DEG_TURN) *     	// FIXME: it might be 2* CELL_DIMENSION/3.
 		MICROMETERS_PER_METER;
+
+
+	
 }
 
 /**
@@ -307,7 +319,7 @@ void turn_to_start_position(float force)
 	set_max_force(get_max_force() / 4.);
 
 	turn_back(force);
-	distance = MOUSE_START_SHIFT - _current_cell_shift();
+	distance = MOUSE_START_SHIFT - _current_cell_shift() - BURI_START_SHIFT;
 	target_straight(get_encoder_average_micrometers(), distance, 0.);
 
 	set_max_force(get_max_force() * 4.);
@@ -317,6 +329,18 @@ void turn_to_start_position(float force)
 	enable_motor_control();
 	drive_break();
 }
+
+void move_front_180(void)
+{
+	front_sensors_control(true);
+	side_sensors_close_control(true);
+	side_sensors_far_control(false);
+	target_straight(current_cell_start_micrometers, CELL_DIMENSION - (CELL_DIMENSION*1.0)/3,
+			get_max_linear_speed());
+	_entered_next_cell();
+}
+
+
 
 /**
  * @brief Move front into the next cell.
@@ -389,9 +413,12 @@ void move_side(enum movement turn, float force)
  */
 void move_back(float force)
 {
-	stop_middle();
+
+  stop_middle();
+  speaker_play_success();
 	turn_back(force);
-	move_front();
+	speaker_play_success();
+	move_front_180();
 }
 
 /**
@@ -434,10 +461,13 @@ void inplace_turn(float radians, float force)
 	float duration;
 	float transition_angle;
 
+	
+	
 	turn_sign = sign(radians);
 	radians = fabsf(radians);
 	angular_acceleration =
 	    force * MOUSE_WHEELS_SEPARATION / MOUSE_MOMENT_OF_INERTIA;
+	
 	max_angular_velocity = sqrt(radians / 2 * angular_acceleration);
 	if (max_angular_velocity > MOUSE_MAX_ANGULAR_VELOCITY)
 		max_angular_velocity = MOUSE_MAX_ANGULAR_VELOCITY;
@@ -451,6 +481,7 @@ void inplace_turn(float radians, float force)
 	set_target_linear_speed(get_ideal_linear_speed());
 	disable_walls_control();
 	start = get_clock_ticks();
+
 	while (true) {
 		current = get_clock_ticks();
 		time = (float)(current - start) / SYSTICK_FREQUENCY_HZ;
@@ -464,6 +495,7 @@ void inplace_turn(float radians, float force)
 			factor = (time - arc) / transition;
 			angular_velocity *= sin(factor * PI / 2);
 		}
+		
 		set_ideal_angular_speed(angular_velocity);
 	}
 	set_ideal_angular_speed(0);
@@ -543,7 +575,8 @@ void execute_movement_sequence(char *sequence, float force,
 			distance = get_move_turn_after(movement);
 			break;
 		case MOVE_STOP:
-			distance -= CELL_DIMENSION / 2;
+		  //distance -= CELL_DIMENSION / 2;
+		  distance -= 1.0 * CELL_DIMENSION/2;
 			side_sensors_close_control(true);
 			side_sensors_far_control(false);
 			parametric_move_front(distance, 0.);
