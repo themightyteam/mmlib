@@ -16,5 +16,6 @@ float get_gyro_z_degrees(void);
 int16_t get_gyro_z_raw(void);
 float get_gyro_z_radps(void);
 float get_gyro_z_dps(void);
+float get_sw_gyro_error(void);
 
 #endif /* __MPU_H */

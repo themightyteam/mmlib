@@ -25,8 +25,12 @@
 #define MPU_GYRO_SENSITIVITY_2000_DPS 16.4
 #define MPU_DPS_TO_RADPS (PI / 180)
 
+#define USE_SW_GYRO_CORRECTION 1
+
 static volatile float deg_integ;
 static volatile int16_t gyro_z_raw;
+
+float sw_gyro_error = 0;
 
 /**
  * @brief Read the WHOAMI register value.
@@ -91,21 +95,46 @@ void gyro_z_calibration(void)
 {
 	int16_t zout_c2;
 	float zout_av = 0;
-	int8_t i;
+	int16_t i;
 
 	deg_integ = 0;
 	for (i = 0; i < MPU_CAL_SAMPLE_NUM; i++) {
-		zout_av = ((float)mpu_read_gyro_z_raw() + zout_av) /
-			  MPU_AVERAGE_FACTOR;
+	  zout_av = ((float)mpu_read_gyro_z_raw() + zout_av)/
+	    MPU_AVERAGE_FACTOR;
 		sleep_us(MPU_CAL_SAMPLE_US);
 	}
+	
 	zout_c2 = -(int16_t)(zout_av * MPU_COMPLEMENT_2_FACTOR);
-	setup_spi_low_speed();
-	mpu_write_register(MPU_Z_OFFS_USR_H,
-			   ((uint8_t)((zout_c2 & MPU_MASK_H) >> BYTE)));
-	mpu_write_register(MPU_Z_OFFS_USR_L, (uint8_t)(zout_c2 & MPU_MASK_L));
-	setup_spi_high_speed();
+
+	if (!USE_SW_GYRO_CORRECTION) {
+
+	  setup_spi_low_speed();
+       
+	
+	  
+	  mpu_write_register(MPU_Z_OFFS_USR_H,
+			     ((uint8_t)((zout_c2 & MPU_MASK_H) >> BYTE)));
+	  mpu_write_register(MPU_Z_OFFS_USR_L, (uint8_t)(zout_c2 & MPU_MASK_L));
+	
+	
+	  setup_spi_high_speed();
+
+	}
 	sleep_us(100000);
+
+	if (USE_SW_GYRO_CORRECTION) {
+	
+	  for (i = 0; i < MPU_CAL_SAMPLE_NUM * 50; i++)
+	    {
+	      sw_gyro_error = ((float)mpu_read_gyro_z_raw()/MPU_GYRO_SENSITIVITY_2000_DPS + sw_gyro_error)/
+		MPU_AVERAGE_FACTOR;
+	      sleep_us(MPU_CAL_SAMPLE_US);
+	    
+	    }
+
+	  sw_gyro_error = -sw_gyro_error;
+	}
+
 }
 
 /**
@@ -147,5 +176,17 @@ float get_gyro_z_radps(void)
  */
 float get_gyro_z_dps(void)
 {
-	return ((float)gyro_z_raw / MPU_GYRO_SENSITIVITY_2000_DPS);
+  return ((float)gyro_z_raw/MPU_GYRO_SENSITIVITY_2000_DPS) + sw_gyro_error;
 }
+
+
+
+/**
+ * @brief Get gyro error callibrated by SW
+ */
+float get_sw_gyro_error(void)
+{
+  return sw_gyro_error;
+}
+
+

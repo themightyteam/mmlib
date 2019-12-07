@@ -357,12 +357,10 @@ void log_data_control___D(void)
 void log_data_control(void)
 {
 
-  	int left_pwm = get_left_pwm();
-	int right_pwm = get_right_pwm();
-
- 
-	   LOG_DATA("pwm %d %d\n",
-		    left_pwm,
-		    right_pwm);
+  
+  float wang = get_gyro_z_dps();
+  float degrees = get_gyro_z_degrees();
+  LOG_DATA("GD %f ;; %f;; %f;; %d \n",wang,
+	   degrees, get_sw_gyro_error(), get_gyro_z_raw());
 		    
 }
