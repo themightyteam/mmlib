@@ -360,7 +360,7 @@ void log_data_control(void)
   
   float wang = get_gyro_z_dps();
   float degrees = get_gyro_z_degrees();
-  LOG_DATA("GD %f ;; %f;; %f;; %d \n",wang,
-	   degrees, get_sw_gyro_error(), get_gyro_z_raw());
+  LOG_DATA("GD %f ;; %f;; %f;; %d;; %f ;; %f ;; %f \n",wang,
+	   degrees, get_sw_gyro_error(), get_gyro_z_raw(), get_angular_integral_error(), get_ideal_angular_speed(), get_measured_angular_speed());
 		    
 }

@@ -37,5 +37,6 @@ void motor_control(void);
 void set_target_linear_speed(float speed);
 void set_ideal_angular_speed(float speed);
 void update_ideal_linear_speed(void);
+float get_angular_integral_error(void);
 
 #endif /* __CONTROL_H */

@@ -303,8 +303,13 @@ void turn_back(float force)
 	    (1. * CELL_DIMENSION / 3. + SHIFT_AFTER_180_DEG_TURN) *     	// FIXME: it might be 2* CELL_DIMENSION/3.
 		MICROMETERS_PER_METER;
 
+	// FLUX
+	target_straight(get_encoder_average_micrometers(),
+			-1. * CELL_DIMENSION/3., 0.);
 
-	
+	//FIXME: update angle here
+	target_straight(get_encoder_average_micrometers(),
+			1. * CELL_DIMENSION/3., 0.);
 }
 
 /**
@@ -330,6 +335,10 @@ void turn_to_start_position(float force)
 	drive_break();
 }
 
+/**
+ * @brief Move front to the next cell after a 180 turn.
+ */ 
+  
 void move_front_180(void)
 {
 	front_sensors_control(true);

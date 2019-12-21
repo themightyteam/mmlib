@@ -168,7 +168,7 @@ int16_t get_gyro_z_raw(void)
 float get_gyro_z_radps(void)
 {
 	return ((float)gyro_z_raw * MPU_DPS_TO_RADPS /
-		MPU_GYRO_SENSITIVITY_2000_DPS);
+		MPU_GYRO_SENSITIVITY_2000_DPS) + sw_gyro_error * MPU_DPS_TO_RADPS;
 }
 
 /**

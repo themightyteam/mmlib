@@ -117,7 +117,6 @@ void set_run_sequence(void)
  */
 void run(float force, enum path_language path)
 {
-  //execute_movement_sequence(run_sequence, force, PATH_DIAGONALS); //FIXME: modify
   execute_movement_sequence(run_sequence, force, path);
 }
 

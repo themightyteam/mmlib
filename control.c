@@ -6,7 +6,7 @@ static volatile float ideal_angular_speed;
 
 static volatile float linear_error;
 static volatile float angular_error;
-static volatile float angular_error_integral;
+static volatile float angular_integral_error = 0;
 static volatile float last_linear_error;
 static volatile float last_angular_error;
 
@@ -282,6 +282,15 @@ void set_ideal_angular_speed(float speed)
 }
 
 /**
+ * @brief get the integral error of the gyroscope 
+ */
+float get_angular_integral_error()
+{
+  return angular_integral_error;
+}
+
+
+/**
  * @brief Update ideal linear speed according to the defined speed profile.
  *
  * Current ideal speed is increased or decreased according to the target speed
@@ -348,9 +357,11 @@ void motor_control(void)
 	}
 
 	linear_error += ideal_linear_speed - get_measured_linear_speed();
-	angular_error += ideal_angular_speed - get_measured_angular_speed();
 
-	angular_error_integral += angular_error;
+	angular_error = ideal_angular_speed - get_measured_angular_speed();
+
+	if (fabsf(get_measured_angular_speed()) < 40000)
+	  angular_integral_error += angular_error;
 	
 	control = get_control_constants();
 
@@ -359,7 +370,7 @@ void motor_control(void)
 	angular_voltage =
 	    control.kp_angular * angular_error +
 	    control.kd_angular * (angular_error - last_angular_error) +
-	  control.ki_angular * angular_error_integral + 
+	    control.ki_angular * angular_integral_error + 
 	    control.kp_angular_side * side_sensors_feedback +
 	    control.kp_angular_front * front_sensors_feedback +
 	    control.kp_angular_diagonal * diagonal_sensors_feedback +
@@ -377,8 +388,11 @@ void motor_control(void)
 
 	last_linear_error = linear_error;
 	last_angular_error = angular_error;
-/*
+	
+/*  FIXME: disconnected but it is a crucial part of the micromouse behaviour
 	if (motor_driver_saturation() >
 	    MAX_MOTOR_DRIVER_SATURATION_PERIOD * SYSTICK_FREQUENCY_HZ)
-		set_collision_detected();*/
+		set_collision_detected(); 
+
+*/
 }
