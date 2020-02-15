@@ -3,7 +3,7 @@
 #define BYTE 8
 #define MPU_CAL_SAMPLE_NUM 100
 #define MPU_AVERAGE_FACTOR 2
-#define MPU_COMPLEMENT_2_FACTOR 2
+#define MPU_COMPLEMENT_2_FACTOR 2 // use 1 with 1000 dpis
 #define MPU_CAL_SAMPLE_US 1000
 
 #define MPU_SMPLRT_DIV 25
@@ -22,10 +22,10 @@
 #define MPU_MASK_H 0xFF00
 #define MPU_MASK_L 0x00FF
 
-#define MPU_GYRO_SENSITIVITY_2000_DPS 16.4
+#define MPU_GYRO_SENSITIVITY_2000_DPS 16.4 // use 32.8 with 1000 dpi
 #define MPU_DPS_TO_RADPS (PI / 180)
 
-#define USE_SW_GYRO_CORRECTION 1
+#define USE_SW_GYRO_CORRECTION 0
 
 static volatile float deg_integ;
 static volatile int16_t gyro_z_raw;
@@ -69,7 +69,7 @@ void setup_mpu(void)
 	mpu_write_register(MPU_USER_CTRL, 0x10);
 	mpu_write_register(MPU_SMPLRT_DIV, 0x00);
 	mpu_write_register(MPU_CONFIG, 0x00);
-	mpu_write_register(MPU_GYRO_CONFIG, 0x18);
+	mpu_write_register(MPU_GYRO_CONFIG, 0x18);  //0X18 // Use 0X10 with 1000 dpi
 	setup_spi_high_speed();
 	sleep_us(100000);
 }

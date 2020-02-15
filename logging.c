@@ -362,5 +362,11 @@ void log_data_control(void)
   float degrees = get_gyro_z_degrees();
   LOG_DATA("GD %f ;; %f;; %f;; %d;; %f ;; %f ;; %f \n",wang,
 	   degrees, get_sw_gyro_error(), get_gyro_z_raw(), get_angular_integral_error(), get_ideal_angular_speed(), get_measured_angular_speed());
-		    
+  
+  /* int encoder_left = get_encoder_left_total_count();
+  int encoder_right = get_encoder_right_total_count();
+
+  LOG_DATA("GD %d %d \n", encoder_left, encoder_right);		    
+
+  */
 }

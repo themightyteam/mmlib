@@ -16,6 +16,8 @@ static volatile int32_t pwm_left;
 static volatile int32_t pwm_right;
 
 static volatile bool collision_detected_signal;
+static volatile bool collision_enabled_signal=true;
+
 static volatile bool motor_control_enabled_signal;
 static volatile bool side_sensors_close_control_enabled;
 static volatile bool side_sensors_far_control_enabled;
@@ -94,6 +96,27 @@ static void set_collision_detected(void)
 	collision_detected_signal = true;
 	motor_control_enabled_signal = false;
 }
+
+
+/**
+ * @brief return true if collisions are enabled
+ */
+static bool is_collision_enabled(void)
+{
+  return collision_enabled_signal;
+}
+
+
+/**
+ * @brief enable collision control signal
+ *
+* @param[in] enable/disable collisions
+ */
+void set_collision_control(bool enable_signal)
+{
+  collision_enabled_signal = enable_signal;
+}
+
 
 /**
  * @brief Returns true if a collision was detected.
@@ -289,6 +312,15 @@ float get_angular_integral_error()
   return angular_integral_error;
 }
 
+/**
+ * @brief set the integral error of the gyroscope 
+ */
+void set_angular_integral_error(float angular_error_reset)
+{
+  angular_integral_error=angular_error_reset;
+}
+
+
 
 /**
  * @brief Update ideal linear speed according to the defined speed profile.
@@ -329,8 +361,9 @@ void motor_control(void)
 	float diagonal_sensors_feedback = 0.;
 	struct control_constants control;
 
-	if (!motor_control_enabled_signal)
+	if (!motor_control_enabled_signal) {
 		return;
+	  }
 
 	update_ideal_linear_speed();
 
@@ -358,10 +391,10 @@ void motor_control(void)
 
 	linear_error += ideal_linear_speed - get_measured_linear_speed();
 
-	angular_error = ideal_angular_speed - get_measured_angular_speed();
+	angular_error += ideal_angular_speed - get_measured_angular_speed();
 
 	if (fabsf(get_measured_angular_speed()) < 40000)
-	  angular_integral_error += angular_error;
+	  angular_integral_error += ideal_angular_speed - get_measured_angular_speed();
 	
 	control = get_control_constants();
 
@@ -389,10 +422,8 @@ void motor_control(void)
 	last_linear_error = linear_error;
 	last_angular_error = angular_error;
 	
-/*  FIXME: disconnected but it is a crucial part of the micromouse behaviour
-	if (motor_driver_saturation() >
-	    MAX_MOTOR_DRIVER_SATURATION_PERIOD * SYSTICK_FREQUENCY_HZ)
+	//FIXME: disconnected but it is a crucial part of the micromouse behaviour
+	if ((motor_driver_saturation()  >
+	     MAX_MOTOR_DRIVER_SATURATION_PERIOD * SYSTICK_FREQUENCY_HZ) && is_collision_enabled())
 		set_collision_detected(); 
-
-*/
 }

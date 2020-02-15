@@ -140,6 +140,58 @@ void target_straight(int32_t start, float distance, float speed)
 	}
 }
 
+
+/**
+ * @brief Reach a target position at a target speed.
+ *
+ * @param[in] start Starting point, in micrometers.
+ * @param[in] distance Distance to travel, in meters, from the starting point.
+ * @param[in] speed Target speed, in meters per second.
+ */
+void target_straight_collision(int32_t start, float distance, float speed)
+{
+	int32_t target_distance;
+
+	set_ideal_angular_speed(0.);
+
+	target_distance = start + (int32_t)(distance * MICROMETERS_PER_METER);
+	if (distance > 0) {
+		set_target_linear_speed(get_max_linear_speed()/3);
+		while (get_encoder_average_micrometers() <
+		       target_distance - required_micrometers_to_speed(speed))
+		  {
+		    if (motor_driver_saturation()  >
+			MAX_MOTOR_DRIVER_SATURATION_PERIOD * 3 * SYSTICK_FREQUENCY_HZ)
+		      break;
+
+		  }
+	} else {
+		set_target_linear_speed(-get_max_linear_speed()/3);
+		while (get_encoder_average_micrometers() >
+		       target_distance - required_micrometers_to_speed(speed)) {
+		  if (motor_driver_saturation()  >
+		      MAX_MOTOR_DRIVER_SATURATION_PERIOD * 3 * SYSTICK_FREQUENCY_HZ)
+		    break;
+		}
+	}
+	set_target_linear_speed(speed);
+	if (speed == 0.) {
+	  while (get_ideal_linear_speed() != speed) {
+	    if (motor_driver_saturation()  >
+		MAX_MOTOR_DRIVER_SATURATION_PERIOD * SYSTICK_FREQUENCY_HZ)
+	      break;
+	  }
+	} else {
+	  while (get_encoder_average_micrometers() < target_distance) {
+	    if (motor_driver_saturation()  >
+		MAX_MOTOR_DRIVER_SATURATION_PERIOD * SYSTICK_FREQUENCY_HZ)
+	      break;
+		  
+	  }
+	}
+}
+
+
 /**
  * @brief Reach a target position at a target speed on a diagonal.
  *
@@ -268,7 +320,7 @@ void stop_head_front_wall(void)
  */
 void stop_middle(void)
 {
-	float distance = CELL_DIMENSION / 3.;
+        float distance = CELL_DIMENSION / 3.;  //FIXME: change to CELL_DIMENSION/2. when sensors are fixed
 
 	front_sensors_control(true);
 	side_sensors_close_control(true);
@@ -298,18 +350,27 @@ void turn_back(float force)
 	direction_sign = (int)(rand() % 2) * 2 - 1;
 	inplace_turn(direction_sign * PI, force);
 
+	// disable collision control because we are going to collide with the back wall
+	set_collision_control(false);
+	
+	target_straight_collision(get_encoder_average_micrometers(),
+				  -2. * CELL_DIMENSION/3., 0.);
+	
+	//reset angular integral error
+	set_angular_integral_error(0.);
+
+	target_straight(get_encoder_average_micrometers(),
+			1. * CELL_DIMENSION/2. - MOUSE_START_SHIFT, get_max_linear_speed());
+
+
+	// re-enable collisions
+	reset_collision_detection();
+	set_collision_control(true);
+
 	current_cell_start_micrometers =
-	    get_encoder_average_micrometers() -
-	    (1. * CELL_DIMENSION / 3. + SHIFT_AFTER_180_DEG_TURN) *     	// FIXME: it might be 2* CELL_DIMENSION/3.
-		MICROMETERS_PER_METER;
+	  get_encoder_average_micrometers() -
+	  (1. * CELL_DIMENSION / 2. + SHIFT_AFTER_180_DEG_TURN) * MICROMETERS_PER_METER;
 
-	// FLUX
-	target_straight(get_encoder_average_micrometers(),
-			-1. * CELL_DIMENSION/3., 0.);
-
-	//FIXME: update angle here
-	target_straight(get_encoder_average_micrometers(),
-			1. * CELL_DIMENSION/3., 0.);
 }
 
 /**
@@ -338,18 +399,14 @@ void turn_to_start_position(float force)
 /**
  * @brief Move front to the next cell after a 180 turn.
  */ 
-  
 void move_front_180(void)
 {
 	front_sensors_control(true);
 	side_sensors_close_control(true);
 	side_sensors_far_control(false);
-	target_straight(current_cell_start_micrometers, CELL_DIMENSION - (CELL_DIMENSION*1.0)/3,
-			get_max_linear_speed());
+	target_straight(current_cell_start_micrometers, CELL_DIMENSION, get_max_linear_speed());
 	_entered_next_cell();
 }
-
-
 
 /**
  * @brief Move front into the next cell.
@@ -426,7 +483,7 @@ void move_back(float force)
   stop_middle();
   speaker_play_success();
 	turn_back(force);
-	speaker_play_success();
+	//speaker_play_success();
 	move_front_180();
 }
 

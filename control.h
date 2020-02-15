@@ -17,6 +17,7 @@ void diagonal_sensors_control(bool value);
 void enable_walls_control(void);
 void disable_walls_control(void);
 bool collision_detected(void);
+void set_collision_control(bool enable_signal);
 void reset_collision_detection(void);
 void reset_control_errors(void);
 void reset_control_speed(void);
@@ -38,5 +39,6 @@ void set_target_linear_speed(float speed);
 void set_ideal_angular_speed(float speed);
 void update_ideal_linear_speed(void);
 float get_angular_integral_error(void);
+void set_angular_integral_error(float angular_error_reset);
 
 #endif /* __CONTROL_H */

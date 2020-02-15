@@ -20,6 +20,7 @@ int32_t required_micrometers_to_speed(float speed);
 float required_time_to_speed(float speed);
 uint32_t required_ticks_to_speed(float speed);
 void target_straight(int32_t start, float distance, float speed);
+void target_straight_collision(int32_t start, float distance, float speed);
 void keep_front_wall_distance(float distance);
 void stop_end(void);
 void stop_head_front_wall(void);
@@ -27,6 +28,7 @@ void stop_middle(void);
 void turn_back(float force);
 void turn_to_start_position(float force);
 void move_front(void);
+void move_front_180(void);
 void parametric_move_front(float distance, float end_linear_speed);
 void parametric_move_diagonal(float distance, float control_distance,
 			      float end_linear_speed);
