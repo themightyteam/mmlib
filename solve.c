@@ -34,6 +34,7 @@ static void go_to_target(float force)
 			return;
 	} while (search_distance() > 0);
 
+	// FIXME: should do these two lines if collision detected???
 	walls = read_walls();
 	update_walls(walls);
 }
@@ -59,11 +60,16 @@ void explore(float force)
 			reset_motion();
 			return;
 		}
+
+		// FIXME: add a flag to verify that the initial target was reached?
+		// and to distinguish it from the other targets (interesting cells)?
 		if (search_position() == 0)
 			break;
 		cell = find_unexplored_interesting_cell();
 		set_target_cell(cell);
 	}
+
+	// FIXME: Should do this if collision was detected?
 	stop_middle();
 	turn_to_start_position(force);
 }

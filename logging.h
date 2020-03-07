@@ -100,5 +100,8 @@ void log_sensors_distance(void);
 void log_encoders_counts(void);
 void log_sensors_raw(void);
 void log_walls_detection(void);
+void log_data_callibration(void);
+void set_show_information(uint8_t show_flag);
+uint8_t get_show_information(void);
 
 #endif /* __LOGGING_H */

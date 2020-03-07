@@ -39,4 +39,9 @@ void inplace_turn(float radians, float force);
 void execute_movement_sequence(char *sequence, float force,
 			       enum path_language language);
 
+void execute_callibration_sequence(float min_distance, float max_distance, uint8_t repetitions, float range);
+void execute_callibration_sequence_with_diagonals(float min_distance, float max_distance, uint8_t repetitions, float range);
+
+
+
 #endif /* __MOVE_H */

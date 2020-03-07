@@ -661,3 +661,100 @@ void execute_movement_sequence(char *sequence, float force,
 		}
 	}
 }
+
+/*
+ * @brief execute a callibration sequence
+ * @param[in] min_distance starting point of the micromouse
+ * @param[in] max_distance maximum distance of the micromouse
+ * @param[in] repetitions number of times to repeat each position
+ * @param[in] range steps to add to each distance
+ */
+void execute_callibration_sequence(float min_distance, float max_distance, uint8_t repetitions, float range) {
+
+  uint8_t current_repetitions = 0;
+  float current_distance = min_distance;
+
+  front_sensors_control(false);
+  
+  while(1) {
+    target_straight(get_encoder_average_micrometers(), current_distance, 0);
+    speaker_play_beeps(4);
+    set_show_information(1);
+
+    while (get_show_information()) {
+      sleep_seconds(1);
+    }
+    
+    target_straight_collision(get_encoder_average_micrometers(), -current_distance + 0.5, 0);
+    current_repetitions += 1;
+
+    if (current_repetitions == repetitions) {
+      current_distance += range;
+      if (current_distance > max_distance)
+	break;
+      
+      current_repetitions = 0;
+    }
+    
+  }
+  
+  
+}
+
+
+/*
+ * @brief execute a callibration sequence
+ * @param[in] min_distance starting point of the micromouse
+ * @param[in] max_distance maximum distance of the micromouse
+ * @param[in] repetitions number of times to repeat each position
+ * @param[in] range steps to add to each distance
+ */
+void execute_callibration_sequence_with_diagonals(float min_distance, float max_distance, uint8_t repetitions, float range) {
+
+  uint8_t current_repetitions = 0;
+  float current_distance = min_distance;
+
+  front_sensors_control(false);
+  
+  while(1) {
+    target_straight(get_encoder_average_micrometers(), current_distance, 0);
+    speaker_play_beeps(4);
+    set_show_information(1);
+
+    while (get_show_information()) {
+      sleep_seconds(1);
+    }
+
+    inplace_turn(PI/2, 0.01);
+
+    set_show_information(2);
+
+    while (get_show_information()) {
+      sleep_seconds(1);
+    }
+
+    inplace_turn(-PI, 0.01);
+
+    set_show_information(3);
+
+    while (get_show_information()) {
+      sleep_seconds(1);
+    } 
+
+    inplace_turn(PI/2, 0.01);
+    
+    target_straight_collision(get_encoder_average_micrometers(), -current_distance + 0.5, 0);
+    current_repetitions += 1;
+
+    if (current_repetitions == repetitions) {
+      current_distance += range;
+      if (current_distance > max_distance)
+	break;
+      
+      current_repetitions = 0;
+    }
+    
+  }
+  
+  
+}

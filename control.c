@@ -424,6 +424,7 @@ void motor_control(void)
 	
 	//FIXME: disconnected but it is a crucial part of the micromouse behaviour
 	if ((motor_driver_saturation()  >
-	     MAX_MOTOR_DRIVER_SATURATION_PERIOD * SYSTICK_FREQUENCY_HZ) && is_collision_enabled())
+	     MAX_MOTOR_DRIVER_SATURATION_PERIOD * SYSTICK_FREQUENCY_HZ) &&
+	    is_collision_enabled())
 		set_collision_detected(); 
 }

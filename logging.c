@@ -2,6 +2,8 @@
 
 static volatile bool data_logging;
 static void (*data_logging_function)(void);
+static uint8_t show_information = 0;
+
 
 /**
  * @brief Start data logging.
@@ -353,8 +355,78 @@ void log_data_control___D(void)
 }
 
 
+void set_show_information(uint8_t show_flag) {
+  show_information = show_flag;
+}
 
-void log_data_control(void)
+uint8_t get_show_information(void) {
+  return show_information;
+}
+
+
+void log_data_callibration(void) {
+
+  uint16_t off[NUM_SENSOR];
+  uint16_t on[NUM_SENSOR];
+  int32_t micrometers = get_encoder_average_micrometers();
+  
+  if (show_information == 1) {
+    
+    get_sensors_raw(on, off);
+
+    LOG_DATA("step,%d,dist,%f,onl,%d,offl,%d,onr,%d,offr,%d",
+	     show_information,
+	     distance,
+	     on[SENSOR_FRONT_LEFT_ID], off[SENSOR_FRONT_LEFT_ID],
+	     on[SENSOR_FRONT_RIGHT_ID], off[SENSOR_FRONT_RIGHT_ID]);
+    
+    show_information = 0;
+    
+  } else if (show_information == 2) {
+
+      get_sensors_raw(on, off);
+
+      LOG_DATA("step,%d,dist,%f,onsr,%d,offsr,%d",
+	       show_information,
+	       distance,
+	       on[SENSOR_SIDE_RIGHT_ID], off[SENSOR_SIDE_RIGHT_ID]);
+    
+      show_information = 0;
+
+  } else if (show_information == 3) {
+    
+      get_sensors_raw(on, off);
+
+      LOG_DATA("step,%d,dist,%f,onsl,%d,offsl,%d",
+	       show_information,
+	       distance,
+	       on[SENSOR_SIDE_LEFT_ID], off[SENSOR_SIDE_LEFT_ID]);
+    
+      show_information = 0;
+  }
+          
+}
+
+
+
+void log_data_control(void) {
+
+	uint16_t off[NUM_SENSOR];
+	uint16_t on[NUM_SENSOR];
+
+	get_sensors_raw(on, off);
+
+	LOG_INFO("OFF-ON,%d,%d,%d,%d,%d,%d,%d,%d", off[SENSOR_SIDE_LEFT_ID],
+		 off[SENSOR_SIDE_RIGHT_ID], off[SENSOR_FRONT_LEFT_ID],
+		 off[SENSOR_FRONT_RIGHT_ID], on[SENSOR_SIDE_LEFT_ID],
+		 on[SENSOR_SIDE_RIGHT_ID], on[SENSOR_FRONT_LEFT_ID],
+		 on[SENSOR_FRONT_RIGHT_ID]);
+            
+}
+
+
+
+void log_data_control_FBLUA(void)
 {
 
   
